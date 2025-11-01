@@ -31,6 +31,11 @@ public class ReviewController {
         return new ResponseEntity<>(reviewService.getReviewsByPokdexId(pokedexId), HttpStatus.OK);
     }
 
+    @GetMapping("id/{id}")
+    public ResponseEntity<ReviewEntityDTO> getReviewById(@PathVariable("id") int id) {
+        return new ResponseEntity<>(reviewService.getReviewById(id), HttpStatus.OK);
+    }
+
     @DeleteMapping("{id}/delete")
     public ResponseEntity<String> deleteReview(@PathVariable("id") int id) {
         reviewService.deleteReviewById(id);

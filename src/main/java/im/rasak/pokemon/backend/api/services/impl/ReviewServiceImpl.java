@@ -43,6 +43,15 @@ public class ReviewServiceImpl implements ReviewService {
     }
 
     @Override
+    public ReviewEntityDTO getReviewById(int id) {
+
+        ReviewEntity reviewEntity = reviewRepository.findById(id)
+                .orElseThrow(() -> new ReviewNotFoundException("Review with id: {" + id + "} not found!"));
+
+        return mapToDTO(reviewEntity);
+    }
+
+    @Override
     public List<ReviewEntityDTO> getReviewsByPokdexId(int pokedexId) {
 
         List<ReviewEntity> findAllReviewsByPokedexId = reviewRepository.findAllByPokemonEntity_PokedexId(pokedexId);
