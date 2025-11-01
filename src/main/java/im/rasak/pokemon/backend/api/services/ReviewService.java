@@ -9,4 +9,6 @@ public interface ReviewService {
     ReviewEntityDTO createReview(int pokedexId, ReviewEntityDTO reviewEntityDTO);
 
     List<ReviewEntityDTO> getReviewsByPokdexId(int pokedexId);
+
+    void deleteReviewById(int id);
 }

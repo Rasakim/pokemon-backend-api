@@ -2,6 +2,7 @@ package im.rasak.pokemon.backend.api.services.impl;
 
 import im.rasak.pokemon.backend.api.dto.ReviewEntityDTO;
 import im.rasak.pokemon.backend.api.exceptions.PokemonNotFoundException;
+import im.rasak.pokemon.backend.api.exceptions.ReviewNotFoundException;
 import im.rasak.pokemon.backend.api.models.PokemonEntity;
 import im.rasak.pokemon.backend.api.models.ReviewEntity;
 import im.rasak.pokemon.backend.api.repository.PokemonRepository;
@@ -52,6 +53,12 @@ public class ReviewServiceImpl implements ReviewService {
         }
 
         return allReviews;
+    }
+
+    @Override
+    public void deleteReviewById(int id) {
+        ReviewEntity reviewEntityToDelete = reviewRepository.findById(id).orElseThrow(() -> new ReviewNotFoundException("Review with id: {" + id + "} not found!"));
+        reviewRepository.delete(reviewEntityToDelete);
     }
 
     private ReviewEntity mapToEntity(ReviewEntityDTO reviewEntityDTO) {
