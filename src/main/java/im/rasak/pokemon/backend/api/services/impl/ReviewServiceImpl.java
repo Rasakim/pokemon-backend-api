@@ -87,6 +87,25 @@ public class ReviewServiceImpl implements ReviewService {
         }
     }
 
+    @Override
+    public ReviewEntityDTO updateReviewById(ReviewEntityDTO reviewEntityDTO, int pokedexId, int reviewId) {
+
+        PokemonEntity pokemonEntity = pokemonRepository.findByPokedexId(pokedexId)
+                .orElseThrow(() -> new PokemonNotFoundException("Pokemon with pokedexId: {" + pokedexId + "} not found!"));
+
+        ReviewEntity reviewEntityToUpdate = reviewRepository.findById(reviewId)
+                .orElseThrow(() -> new ReviewNotFoundException("Review with id: {" + reviewId + "} not found!"));
+
+        if (pokemonEntity.getPokedexId() != reviewEntityToUpdate.getPokemonEntity().getPokedexId()) {
+            throw new ReviewNotFoundException("PokedexId: {" + pokedexId + "} does not belong to this ReviewId: {" + reviewId + "}!");
+        } else {
+            updateEntityFromDTO(reviewEntityToUpdate, reviewEntityDTO);
+            reviewRepository.save(reviewEntityToUpdate);
+
+            return mapToDTO(reviewEntityToUpdate);
+        }
+    }
+
     private ReviewEntity mapToEntity(ReviewEntityDTO reviewEntityDTO) {
         ReviewEntity mappedEntity = new ReviewEntity();
 
@@ -107,5 +126,25 @@ public class ReviewServiceImpl implements ReviewService {
         mappedEntity.setPokedexId(reviewEntity.getPokemonEntity().getPokedexId());
 
         return mappedEntity;
+    }
+
+    private void updateEntityFromDTO(ReviewEntity reviewEntityToUpdate, ReviewEntityDTO reviewEntityDTO) {
+        if ((reviewEntityDTO.getPokedexId() != null) && (reviewEntityToUpdate.getPokemonEntity().getPokedexId() != reviewEntityDTO.getPokedexId())) {
+            PokemonEntity newPokemonEntity = pokemonRepository.findByPokedexId(reviewEntityDTO.getPokedexId())
+                    .orElseThrow(() -> new PokemonNotFoundException("Pokemon with pokedexId: {" + reviewEntityDTO.getPokedexId() + "} not found!"));
+            reviewEntityToUpdate.setPokemonEntity(newPokemonEntity);
+        }
+
+        if (reviewEntityDTO.getTitle() != null && !reviewEntityDTO.getTitle().isEmpty()) {
+            reviewEntityToUpdate.setTitle(reviewEntityDTO.getTitle());
+        }
+
+        if (reviewEntityDTO.getContent() != null && !reviewEntityDTO.getContent().isEmpty()) {
+            reviewEntityToUpdate.setContent(reviewEntityDTO.getContent());
+        }
+
+        if (reviewEntityDTO.getStars() >= 0 && reviewEntityDTO.getStars() <= 5) {
+            reviewEntityToUpdate.setStars(reviewEntityDTO.getStars());
+        }
     }
 }
