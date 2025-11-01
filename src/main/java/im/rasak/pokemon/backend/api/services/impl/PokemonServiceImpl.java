@@ -57,14 +57,6 @@ public class PokemonServiceImpl implements PokemonService {
     }
 
     @Override
-    public PokemonEntityDTO getPokemonById(int id) {
-        PokemonEntity pokemonEntity = pokemonRepository.findById(id)
-                .orElseThrow(() -> new PokemonNotFoundException("Pokemon with id: {" + id + "} not found!"));
-
-        return mapToDTO(pokemonEntity);
-    }
-
-    @Override
     public PokemonEntityDTO getPokemonByPokedexId(int pokedexId) {
         PokemonEntity pokemonEntity = pokemonRepository.findByPokedexId(pokedexId)
                 .orElseThrow(() -> new PokemonNotFoundException("Pokemon with pokedexId: {" + pokedexId + "} not found!"));
@@ -81,7 +73,7 @@ public class PokemonServiceImpl implements PokemonService {
     }
 
     @Override
-    public PokemonEntityDTO updatePokemonById(PokemonEntityDTO pokemonEntityDTO, int id) {
+    public PokemonEntityDTO updatePokemonByPokedexId(PokemonEntityDTO pokemonEntityDTO, int id) {
         PokemonEntity pokemonEntity = pokemonRepository.findById(id)
                 .orElseThrow(() -> new PokemonNotFoundException("Pokemon with id: {" + id + "} not found!"));
 
@@ -93,9 +85,9 @@ public class PokemonServiceImpl implements PokemonService {
     }
 
     @Override
-    public void deletePokemonById(int id) {
-        PokemonEntity pokemonEntity = pokemonRepository.findById(id)
-                .orElseThrow(() -> new PokemonNotFoundException("Pokemon with id: {" + id + "} not found!"));
+    public void deletePokemonByPokedexId(int pokedexId) {
+        PokemonEntity pokemonEntity = pokemonRepository.findById(pokedexId)
+                .orElseThrow(() -> new PokemonNotFoundException("Pokemon with id: {" + pokedexId + "} not found!"));
 
         pokemonRepository.delete(pokemonEntity);
     }

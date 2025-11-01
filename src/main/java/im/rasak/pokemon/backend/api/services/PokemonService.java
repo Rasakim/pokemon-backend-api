@@ -9,15 +9,13 @@ public interface PokemonService {
 
     PokemonPageResponseDTO getAllPokemons(int pageNumber, int pageSize);
 
-    PokemonEntityDTO getPokemonById(int id);
-
     PokemonEntityDTO getPokemonByPokedexId(int pokedexId);
 
     PokemonEntityDTO getPokemonByName(String name);
 
-    PokemonEntityDTO updatePokemonById(PokemonEntityDTO pokemonEntityDTO, int id);
+    PokemonEntityDTO updatePokemonByPokedexId(PokemonEntityDTO pokemonEntityDTO, int pokedexId);
 
-    void deletePokemonById(int id);
+    void deletePokemonByPokedexId(int pokedexId);
 
     void deleteAllPokemon();
 }

@@ -12,15 +12,12 @@ import java.util.Set;
 public class PokemonEntity {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
-
     private int pokedexId;
 
     private String name;
 
     @ElementCollection(targetClass = PokemonEntityType.class)
-    @CollectionTable(name = "pokemon_entity_types", joinColumns = @JoinColumn(name = "pokemon_id"))
+    @CollectionTable(name = "pokemon_entity_types", joinColumns = @JoinColumn(name = "pokedex_id"))
     @Enumerated(EnumType.STRING)
     private Set<PokemonEntityType> types = new HashSet<>();
 
@@ -32,20 +29,12 @@ public class PokemonEntity {
     public PokemonEntity() {
     }
 
-    public PokemonEntity(int id, int pokedexId, String name, Set<PokemonEntityType> types, String imageUrl) {
-        this.id = id;
+    public PokemonEntity(int pokedexId, String name, Set<PokemonEntityType> types, String imageUrl) {
+
         this.pokedexId = pokedexId;
         this.name = name;
         this.types = types;
         this.imageUrl = imageUrl;
-    }
-
-    public int getId() {
-        return id;
-    }
-
-    public void setId(int id) {
-        this.id = id;
     }
 
     public int getPokedexId() {

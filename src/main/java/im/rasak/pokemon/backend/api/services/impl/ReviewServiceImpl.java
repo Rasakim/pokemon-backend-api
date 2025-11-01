@@ -43,12 +43,19 @@ public class ReviewServiceImpl implements ReviewService {
     }
 
     @Override
-    public ReviewEntityDTO getReviewById(int id) {
+    public ReviewEntityDTO getReviewById(int pokedexId, int reviewId) {
 
-        ReviewEntity reviewEntity = reviewRepository.findById(id)
-                .orElseThrow(() -> new ReviewNotFoundException("Review with id: {" + id + "} not found!"));
+        PokemonEntity pokemonEntity = pokemonRepository.findByPokedexId(pokedexId)
+                .orElseThrow(() -> new PokemonNotFoundException("Pokemon with pokedexId: {" + pokedexId + "} not found!"));
 
-        return mapToDTO(reviewEntity);
+        ReviewEntity reviewEntity = reviewRepository.findById(reviewId)
+                .orElseThrow(() -> new ReviewNotFoundException("Review with id: {" + reviewId + "} not found!"));
+
+        if (pokemonEntity.getPokedexId() != reviewEntity.getPokemonEntity().getPokedexId()) {
+            throw new ReviewNotFoundException("PokedexId: {" + pokedexId + "} does not belong to this ReviewId: {" + reviewId + "}!");
+        } else {
+            return mapToDTO(reviewEntity);
+        }
     }
 
     @Override
@@ -65,9 +72,19 @@ public class ReviewServiceImpl implements ReviewService {
     }
 
     @Override
-    public void deleteReviewById(int id) {
-        ReviewEntity reviewEntityToDelete = reviewRepository.findById(id).orElseThrow(() -> new ReviewNotFoundException("Review with id: {" + id + "} not found!"));
-        reviewRepository.delete(reviewEntityToDelete);
+    public void deleteReviewById(int pokedexId, int reviewId) {
+
+        PokemonEntity pokemonEntity = pokemonRepository.findByPokedexId(pokedexId)
+                .orElseThrow(() -> new PokemonNotFoundException("Pokemon with pokedexId: {" + pokedexId + "} not found!"));
+
+        ReviewEntity reviewEntityToDelete = reviewRepository.findById(reviewId)
+                .orElseThrow(() -> new ReviewNotFoundException("Review with id: {" + reviewId + "} not found!"));
+
+        if (pokemonEntity.getPokedexId() != reviewEntityToDelete.getPokemonEntity().getPokedexId()) {
+            throw new ReviewNotFoundException("PokedexId: {" + pokedexId + "} does not belong to this ReviewId: {" + reviewId + "}!");
+        } else {
+            reviewRepository.delete(reviewEntityToDelete);
+        }
     }
 
     private ReviewEntity mapToEntity(ReviewEntityDTO reviewEntityDTO) {
