@@ -1,6 +1,7 @@
 package im.rasak.pokemon.backend.api.services.impl;
 
 import im.rasak.pokemon.backend.api.dto.ReviewEntityDTO;
+import im.rasak.pokemon.backend.api.dto.ReviewPageResponseDTO;
 import im.rasak.pokemon.backend.api.exceptions.PokemonNotFoundException;
 import im.rasak.pokemon.backend.api.exceptions.ReviewNotFoundException;
 import im.rasak.pokemon.backend.api.models.PokemonEntity;
@@ -9,6 +10,9 @@ import im.rasak.pokemon.backend.api.repository.PokemonRepository;
 import im.rasak.pokemon.backend.api.repository.ReviewRepository;
 import im.rasak.pokemon.backend.api.services.ReviewService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -56,6 +60,15 @@ public class ReviewServiceImpl implements ReviewService {
         } else {
             return mapToDTO(reviewEntity);
         }
+    }
+
+    @Override
+    public ReviewPageResponseDTO getAllReviewsForPokemonByPokedexId(int pokedexId, int pageNumber, int pageSize) {
+        Pageable pageable = PageRequest.of(pageNumber, pageSize);
+        Page<ReviewEntity> allReviewsForPokemon = reviewRepository.findAllReviewsForPokemonByPokedexId(pokedexId, pageable);
+        List<ReviewEntity> listOfAllReviewsForPokemon = allReviewsForPokemon.getContent();
+
+        return mapToReviewPageResponseDTO(listOfAllReviewsForPokemon, allReviewsForPokemon);
     }
 
     @Override
@@ -146,5 +159,22 @@ public class ReviewServiceImpl implements ReviewService {
         if (reviewEntityDTO.getStars() >= 0 && reviewEntityDTO.getStars() <= 5) {
             reviewEntityToUpdate.setStars(reviewEntityDTO.getStars());
         }
+    }
+
+    private ReviewPageResponseDTO mapToReviewPageResponseDTO(List<ReviewEntity> listOfAllReviewsForPokemon, Page<ReviewEntity> allReviewsForPokemon) {
+
+        List<ReviewEntityDTO> content = new ArrayList<>();
+
+        for (ReviewEntity review : listOfAllReviewsForPokemon) {
+            content.add(mapToDTO(review));
+        }
+        ReviewPageResponseDTO reviewPageResponseDTO = new ReviewPageResponseDTO();
+        reviewPageResponseDTO.setContent(content);
+        reviewPageResponseDTO.setPageNumber(allReviewsForPokemon.getNumber());
+        reviewPageResponseDTO.setPageSize(allReviewsForPokemon.getSize());
+        reviewPageResponseDTO.setTotalElements(allReviewsForPokemon.getTotalElements());
+        reviewPageResponseDTO.setTotalPages(allReviewsForPokemon.getTotalPages());
+        reviewPageResponseDTO.setLastPage(allReviewsForPokemon.isLast());
+        return reviewPageResponseDTO;
     }
 }

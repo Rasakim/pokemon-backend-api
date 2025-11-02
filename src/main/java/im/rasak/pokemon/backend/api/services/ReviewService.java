@@ -1,7 +1,9 @@
 package im.rasak.pokemon.backend.api.services;
 
 import im.rasak.pokemon.backend.api.dto.ReviewEntityDTO;
+import im.rasak.pokemon.backend.api.dto.ReviewPageResponseDTO;
 import im.rasak.pokemon.backend.api.models.ReviewEntity;
+import org.springframework.data.domain.Page;
 
 import java.util.List;
 
@@ -16,4 +18,6 @@ public interface ReviewService {
     void deleteReviewById(int pokedexId, int reviewId);
 
     ReviewEntityDTO updateReviewById(ReviewEntityDTO reviewEntityDTO, int pokedexId, int reviewId);
+
+    ReviewPageResponseDTO getAllReviewsForPokemonByPokedexId(int pokedexId, int pageNumber, int pageSize);
 }

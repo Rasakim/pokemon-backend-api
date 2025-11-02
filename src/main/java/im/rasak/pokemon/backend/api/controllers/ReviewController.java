@@ -1,6 +1,8 @@
 package im.rasak.pokemon.backend.api.controllers;
 
+import im.rasak.pokemon.backend.api.dto.PokemonPageResponseDTO;
 import im.rasak.pokemon.backend.api.dto.ReviewEntityDTO;
+import im.rasak.pokemon.backend.api.dto.ReviewPageResponseDTO;
 import im.rasak.pokemon.backend.api.services.ReviewService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -27,9 +29,20 @@ public class ReviewController {
     }
 
     @GetMapping("{pokedexId}/reviews")
+    public ResponseEntity<ReviewPageResponseDTO> getAllReviewsForPokemon(
+            @PathVariable(value = "pokedexId", required = true) int pokedexId,
+            @RequestParam(value = "pageNumber", defaultValue = "0", required = false) int pageNumber,
+            @RequestParam(value = "pageSize", defaultValue = "10", required = false) int pageSize)
+    {
+        return new ResponseEntity<>(reviewService.getAllReviewsForPokemonByPokedexId(pokedexId, pageNumber, pageSize), HttpStatus.OK);
+    }
+
+    /**
+    @GetMapping("{pokedexId}/reviews")
     public ResponseEntity<List<ReviewEntityDTO>> getReviewsByPokedexId(@PathVariable("pokedexId") int pokedexId) {
         return new ResponseEntity<>(reviewService.getReviewsByPokdexId(pokedexId), HttpStatus.OK);
     }
+    **/
 
     @GetMapping("{pokedexId}/reviews/{reviewId}")
     public ResponseEntity<ReviewEntityDTO> getReviewById(@PathVariable("pokedexId") int pokedexId, @PathVariable("reviewId") int reviewId) {
