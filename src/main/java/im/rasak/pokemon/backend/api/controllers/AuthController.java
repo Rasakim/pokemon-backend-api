@@ -5,12 +5,13 @@ import im.rasak.pokemon.backend.api.models.Role;
 import im.rasak.pokemon.backend.api.models.UserEntity;
 import im.rasak.pokemon.backend.api.repository.RoleRepository;
 import im.rasak.pokemon.backend.api.repository.UserRepository;
-import org.apache.catalina.User;
-import org.apache.coyote.Response;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -53,10 +54,6 @@ public class AuthController {
 
         Set<Role> roles = new HashSet<>();
 
-        if (registerDto.getUsername().equals("Rasakim")) {
-            roles.add(roleRepository.findByName("ADMIN").get());
-        }
-
         roles.add(roleRepository.findByName("USER").get());
 
         newUser.setRoles(roles);
@@ -68,6 +65,7 @@ public class AuthController {
 
     @PostMapping("login")
     public ResponseEntity<String> login(@RequestBody RegisterDto loginDto) {
+
         Optional<UserEntity> userOpt = userRepository.findByUsername(loginDto.getUsername());
 
         if (userOpt.isEmpty()) {
@@ -79,6 +77,11 @@ public class AuthController {
         if (!passwordEncoder.matches(loginDto.getPassword(), user.getPassword())) {
             return new ResponseEntity<>("Wrong username or password.", HttpStatus.BAD_REQUEST);
         }
+
+        Authentication authentication = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(loginDto.getUsername(), loginDto.getPassword()));
+
+        SecurityContextHolder.getContext().setAuthentication(authentication);
 
         return new ResponseEntity<>("User logged in successfully.", HttpStatus.OK);
     }
