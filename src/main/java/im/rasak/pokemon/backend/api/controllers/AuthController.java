@@ -1,10 +1,12 @@
 package im.rasak.pokemon.backend.api.controllers;
 
+import im.rasak.pokemon.backend.api.dto.AuthResponseDTO;
 import im.rasak.pokemon.backend.api.dto.RegisterDto;
 import im.rasak.pokemon.backend.api.models.Role;
 import im.rasak.pokemon.backend.api.models.UserEntity;
 import im.rasak.pokemon.backend.api.repository.RoleRepository;
 import im.rasak.pokemon.backend.api.repository.UserRepository;
+import im.rasak.pokemon.backend.api.security.JwtHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -24,23 +26,23 @@ import java.util.*;
 @RequestMapping("/api/auth")
 public class AuthController {
 
-    @Autowired
     private AuthenticationManager authenticationManager;
 
-    @Autowired
     private UserRepository userRepository;
 
-    @Autowired
     private RoleRepository roleRepository;
 
-    @Autowired
     private PasswordEncoder passwordEncoder;
 
-    public AuthController(AuthenticationManager authenticationManager, UserRepository userRepository, RoleRepository roleRepository, PasswordEncoder passwordEncoder) {
+    private JwtHelper jwtHelper;
+
+    @Autowired
+    public AuthController(AuthenticationManager authenticationManager, UserRepository userRepository, RoleRepository roleRepository, PasswordEncoder passwordEncoder, JwtHelper jwtHelper) {
         this.authenticationManager = authenticationManager;
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
         this.passwordEncoder = passwordEncoder;
+        this.jwtHelper = jwtHelper;
     }
 
     @PostMapping("register")
@@ -64,25 +66,12 @@ public class AuthController {
     }
 
     @PostMapping("login")
-    public ResponseEntity<String> login(@RequestBody RegisterDto loginDto) {
-
-        Optional<UserEntity> userOpt = userRepository.findByUsername(loginDto.getUsername());
-
-        if (userOpt.isEmpty()) {
-            return new ResponseEntity<>("Wrong username or password.", HttpStatus.BAD_REQUEST);
-        }
-
-        UserEntity user = userOpt.get();
-
-        if (!passwordEncoder.matches(loginDto.getPassword(), user.getPassword())) {
-            return new ResponseEntity<>("Wrong username or password.", HttpStatus.BAD_REQUEST);
-        }
-
+    public ResponseEntity<AuthResponseDTO> login(@RequestBody RegisterDto loginDto) {
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(loginDto.getUsername(), loginDto.getPassword()));
 
         SecurityContextHolder.getContext().setAuthentication(authentication);
-
-        return new ResponseEntity<>("User logged in successfully.", HttpStatus.OK);
+        String token = jwtHelper.generateToken(authentication);
+        return new ResponseEntity<>(new AuthResponseDTO(token), HttpStatus.OK);
     }
 }
