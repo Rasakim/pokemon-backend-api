@@ -2,12 +2,15 @@ package im.rasak.pokemon.backend.api.services.impl;
 
 import im.rasak.pokemon.backend.api.dto.LoginDto;
 import im.rasak.pokemon.backend.api.dto.RegisterDto;
+import im.rasak.pokemon.backend.api.exceptions.EmailAlreadyTakenException;
+import im.rasak.pokemon.backend.api.exceptions.UsernameAlreadyTakenException;
 import im.rasak.pokemon.backend.api.models.Role;
 import im.rasak.pokemon.backend.api.models.UserEntity;
 import im.rasak.pokemon.backend.api.repository.RoleRepository;
 import im.rasak.pokemon.backend.api.repository.UserRepository;
 import im.rasak.pokemon.backend.api.security.JwtHelper;
 import im.rasak.pokemon.backend.api.services.AuthService;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -24,6 +27,7 @@ import java.util.Set;
 @Service
 @RequiredArgsConstructor
 @Slf4j
+@Transactional
 public class AuthServiceImpl implements AuthService {
 
     private final AuthenticationManager authenticationManager;
@@ -36,12 +40,12 @@ public class AuthServiceImpl implements AuthService {
     public void registerUser(RegisterDto registerDto) {
         if(userRepository.existsByUsername(registerDto.getUsername())) {
             log.warn("Registration failed: username '{}' is already taken", registerDto.getUsername());
-            throw new RuntimeException("Username '" + registerDto.getUsername() + "' is already taken");
+            throw new UsernameAlreadyTakenException("Username '" + registerDto.getUsername() + "' is already taken");
         }
 
         if(userRepository.existsByEmail(registerDto.getEmail())) {
             log.warn("Registration failed: email '{}' is already taken", registerDto.getEmail());
-            throw new RuntimeException("Email '" + registerDto.getEmail() + "' is already registered");
+            throw new EmailAlreadyTakenException("Email '" + registerDto.getEmail() + "' is already registered");
         }
 
         UserEntity newUser = new UserEntity();

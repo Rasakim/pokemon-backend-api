@@ -1,8 +1,6 @@
 package im.rasak.pokemon.backend.api.config;
 
-import im.rasak.pokemon.backend.api.exceptions.ErrorObject;
-import im.rasak.pokemon.backend.api.exceptions.PokemonNotFoundException;
-import im.rasak.pokemon.backend.api.exceptions.ReviewNotFoundException;
+import im.rasak.pokemon.backend.api.exceptions.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -25,7 +23,7 @@ public class GlobalExceptionHandler {
         errorObject.setMessage(ex.getMessage());
         errorObject.setTimestamp(new Date());
 
-        return new ResponseEntity<ErrorObject>(errorObject, HttpStatus.NOT_FOUND);
+        return new ResponseEntity<>(errorObject, HttpStatus.NOT_FOUND);
     }
 
     @ExceptionHandler(ReviewNotFoundException.class)
@@ -36,7 +34,7 @@ public class GlobalExceptionHandler {
         errorObject.setMessage(ex.getMessage());
         errorObject.setTimestamp(new Date());
 
-        return new ResponseEntity<ErrorObject>(errorObject, HttpStatus.NOT_FOUND);
+        return new ResponseEntity<>(errorObject, HttpStatus.NOT_FOUND);
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
@@ -46,5 +44,27 @@ public class GlobalExceptionHandler {
         ex.getBindingResult().getFieldErrors().forEach(error ->
                 errors.put(error.getField(), error.getDefaultMessage()));
         return ResponseEntity.badRequest().body(errors);
+    }
+
+    @ExceptionHandler(UsernameAlreadyTakenException.class)
+    public ResponseEntity<ErrorObject> handleUsernameAlreadyTakenException(UsernameAlreadyTakenException ex) {
+        ErrorObject errorObject = new ErrorObject();
+
+        errorObject.setStatusCode(HttpStatus.BAD_REQUEST.value());
+        errorObject.setMessage(ex.getMessage());
+        errorObject.setTimestamp(new Date());
+
+        return new ResponseEntity<>(errorObject, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(EmailAlreadyTakenException.class)
+    public ResponseEntity<ErrorObject> handleEmailAlreadyTakenException(EmailAlreadyTakenException ex) {
+        ErrorObject errorObject = new ErrorObject();
+
+        errorObject.setStatusCode(HttpStatus.BAD_REQUEST.value());
+        errorObject.setMessage(ex.getMessage());
+        errorObject.setTimestamp(new Date());
+
+        return new ResponseEntity<>(errorObject, HttpStatus.BAD_REQUEST);
     }
 }
