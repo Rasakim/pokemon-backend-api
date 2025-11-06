@@ -8,6 +8,7 @@ import im.rasak.pokemon.backend.api.models.UserEntity;
 import im.rasak.pokemon.backend.api.repository.RoleRepository;
 import im.rasak.pokemon.backend.api.repository.UserRepository;
 import im.rasak.pokemon.backend.api.security.JwtHelper;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -15,6 +16,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -37,7 +39,7 @@ public class AuthController {
     private final JwtHelper jwtHelper;
 
     @PostMapping("register")
-    public ResponseEntity<String> register(@RequestBody RegisterDto registerDto) {
+    public ResponseEntity<String> register(@Valid @RequestBody RegisterDto registerDto) {
 
         if(userRepository.existsByUsername(registerDto.getUsername())) {
             log.warn("Registration failed: username '{}' is already taken", registerDto.getUsername());
@@ -46,7 +48,7 @@ public class AuthController {
 
         if(userRepository.existsByEmail(registerDto.getEmail())) {
             log.warn("Registration failed: email '{}' is already taken", registerDto.getEmail());
-            return new ResponseEntity<>("Registration failed: email '" + registerDto.getEmail() + "' is already taken", HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>("Registration failed: email '" + registerDto.getEmail() + "' is registered", HttpStatus.BAD_REQUEST);
         }
 
         UserEntity newUser = new UserEntity();
@@ -66,14 +68,19 @@ public class AuthController {
     }
 
     @PostMapping("login")
-    public ResponseEntity<AuthResponseDto> login(@RequestBody LoginDto loginDto) {
+    public ResponseEntity<AuthResponseDto> login(@Valid @RequestBody LoginDto loginDto) {
 
-        Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(loginDto.getUsername(), loginDto.getPassword()));
+        try {
+            Authentication authentication = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(loginDto.getUsername(), loginDto.getPassword()));
 
-        SecurityContextHolder.getContext().setAuthentication(authentication);
-        String token = jwtHelper.generateToken(authentication);
+            SecurityContextHolder.getContext().setAuthentication(authentication);
+            String token = jwtHelper.generateToken(authentication);
 
-        return new ResponseEntity<>(new AuthResponseDto(token), HttpStatus.OK);
+            return new ResponseEntity<>(new AuthResponseDto(token), HttpStatus.OK);
+        } catch (AuthenticationException ex) {
+            log.warn("Failed login attempt for username '{}': {}", loginDto.getUsername(), ex.getMessage());
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
     }
 }
