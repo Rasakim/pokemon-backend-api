@@ -5,6 +5,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -51,6 +53,11 @@ public class GlobalExceptionHandler {
         return buildErrorResponse(ex.getMessage(), HttpStatus.CONFLICT, null);
     }
 
+    @ExceptionHandler(AuthenticationLoginException.class)
+    public ResponseEntity<ErrorObject> AuthenticationException(AuthenticationLoginException ex) {
+        return buildErrorResponse(ex.getMessage(), HttpStatus.BAD_REQUEST, ex.getErrors());
+    }
+
     private ResponseEntity<ErrorObject> buildErrorResponse(String message, HttpStatus status, Map<String, String> errors) {
         HttpServletRequest request = getCurrentHttpRequest();
         String clientIp = request != null ? request.getRemoteAddr() : "unknown";
@@ -59,6 +66,12 @@ public class GlobalExceptionHandler {
         String userAgent = request != null ? request.getHeader("User-Agent") : "unknown";
         String sessionId = (request != null && request.getSession(false) != null) ? request.getSession(false).getId() : "none";
 
+        String authUserName = "anonymous";
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null && authentication.isAuthenticated() && !authentication.getName().equals("anonymousUser")) {
+            authUserName = authentication.getName();
+        }
+
         String errorDetails = "";
         if (errors != null && !errors.isEmpty()) {
             errorDetails = errors.entrySet().stream()
@@ -66,16 +79,15 @@ public class GlobalExceptionHandler {
                     .collect(Collectors.joining(", "));
         }
 
-        // Logging mit Fehlerdetails
         if (status.is5xxServerError()) {
-            log.error("Request failed: HTTP {} - {}, Errors: [{}], IP: {}, URL: {}, Method: {}, User-Agent: {}, Session-ID: {}",
-                    status.value(), message, errorDetails, clientIp, url, method, userAgent, sessionId);
+            log.error("Request failed: HTTP {} - {}, Errors: [{}], User: {}, IP: {}, URL: {}, Method: {}, User-Agent: {}, Session-ID: {}",
+                    status.value(), message, errorDetails, authUserName, clientIp, url, method, userAgent, sessionId);
         } else if (status.is4xxClientError()) {
-            log.warn("Client error: HTTP {} - {}, Errors: [{}], IP: {}, URL: {}, Method: {}, User-Agent: {}, Session-ID: {}",
-                    status.value(), message, errorDetails, clientIp, url, method, userAgent, sessionId);
+            log.warn("Client error: HTTP {} - {}, Errors: [{}], User: {}, IP: {}, URL: {}, Method: {}, User-Agent: {}, Session-ID: {}",
+                    status.value(), message, errorDetails, authUserName, clientIp, url, method, userAgent, sessionId);
         } else {
-            log.info("HTTP {} - {}, Errors: [{}], IP: {}, URL: {}, Method: {}, User-Agent: {}, Session-ID: {}",
-                    status.value(), message, errorDetails, clientIp, url, method, userAgent, sessionId);
+            log.info("HTTP {} - {}, Errors: [{}], User: {}, IP: {}, URL: {}, Method: {}, User-Agent: {}, Session-ID: {}",
+                    status.value(), message, errorDetails, authUserName, clientIp, url, method, userAgent, sessionId);
         }
 
         ErrorObject errorObject = new ErrorObject();
@@ -88,7 +100,6 @@ public class GlobalExceptionHandler {
 
         return new ResponseEntity<>(errorObject, status);
     }
-
 
     private HttpServletRequest getCurrentHttpRequest() {
         ServletRequestAttributes attrs = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
