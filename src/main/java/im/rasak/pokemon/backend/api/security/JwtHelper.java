@@ -1,9 +1,9 @@
 package im.rasak.pokemon.backend.api.security;
 
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 import org.springframework.security.core.Authentication;
@@ -14,6 +14,7 @@ import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
 
+@Slf4j
 @Component
 public class JwtHelper {
 
@@ -60,8 +61,21 @@ public class JwtHelper {
                     .build()
                     .parseSignedClaims(token);
             return true;
+        } catch (ExpiredJwtException ex) {
+            log.warn("JWT expired at: {}", ex.getMessage());
+            throw new AuthenticationCredentialsNotFoundException("Token expired", ex);
+        } catch (UnsupportedJwtException ex) {
+            log.warn("Unsupported JWT: {}", ex.getMessage());
+            throw new AuthenticationCredentialsNotFoundException("Unsupported JWT", ex);
+        } catch (MalformedJwtException ex) {
+            log.error("Invalid JWT format: {}", ex.getMessage());
+            throw new AuthenticationCredentialsNotFoundException("Invalid JWT", ex);
+        } catch (SignatureException ex) {
+            log.error("Invalid JWT signature: {}", ex.getMessage());
+            throw new AuthenticationCredentialsNotFoundException("Invalid signature", ex);
         } catch (Exception ex) {
-            throw new AuthenticationCredentialsNotFoundException("JWT was expired or incorrect.");
+            log.error("JWT validation failed: {}", ex.getMessage());
+            throw new AuthenticationCredentialsNotFoundException("JWT validation failed", ex);
         }
     }
 }

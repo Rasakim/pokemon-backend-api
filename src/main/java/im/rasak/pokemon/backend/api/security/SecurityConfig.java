@@ -5,7 +5,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -20,18 +19,24 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @EnableWebSecurity
 public class SecurityConfig {
 
-    private JwtAuthEntryPoint jwtAuthEntryPoint;
+    private final JwtAuthEntryPoint jwtAuthEntryPoint;
 
-    private CustomUserDetailsService userDetailsService;
+    private final JwtHelper jwtHelper;
+
+    private final CustomUserDetailsService userDetailsService;
 
     @Autowired
-    public SecurityConfig(CustomUserDetailsService userDetailsService, JwtAuthEntryPoint jwtAuthEntryPoint) {
-        this.userDetailsService = userDetailsService;
+    public SecurityConfig(CustomUserDetailsService userDetailsService, JwtAuthEntryPoint jwtAuthEntryPoint, JwtHelper jwtHelper) {
         this.jwtAuthEntryPoint = jwtAuthEntryPoint;
+        this.jwtHelper = jwtHelper;
+        this.userDetailsService = userDetailsService;
     }
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+
+        http.addFilterBefore(jwtAuthenticationFilter(jwtHelper, userDetailsService), UsernamePasswordAuthenticationFilter.class);
+
         http
                 .csrf(AbstractHttpConfigurer::disable)
                 .exceptionHandling(exception -> exception.authenticationEntryPoint(jwtAuthEntryPoint))
@@ -40,10 +45,8 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/auth/**").permitAll()
                         .requestMatchers(HttpMethod.GET).authenticated()
                         .anyRequest().authenticated()
-                )
-                .httpBasic(Customizer.withDefaults());
+                );
 
-        http.addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
 
@@ -58,7 +61,7 @@ public class SecurityConfig {
     }
 
     @Bean
-    public JwtAuthenticationFilter jwtAuthenticationFilter() {
-        return new JwtAuthenticationFilter();
+    public JwtAuthenticationFilter jwtAuthenticationFilter(JwtHelper jwtHelper, CustomUserDetailsService customUserDetailsService) {
+        return new JwtAuthenticationFilter(jwtHelper, customUserDetailsService);
     }
 }
