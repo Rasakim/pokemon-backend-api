@@ -1,44 +1,19 @@
 package im.rasak.pokemon.backend.api.exceptions;
 
-import java.util.Date;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
+import java.util.Date;
+import java.util.Map;
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class ErrorObject {
 
     private Integer statusCode;
     private String message;
+    private Map<String, String> errors;
     private Date timestamp;
-
-    public ErrorObject() {
-
-    }
-
-    public ErrorObject(Integer statusCode, String message, Date timestamp) {
-        this.statusCode = statusCode;
-        this.message = message;
-        this.timestamp = timestamp;
-    }
-
-    public Integer getStatusCode() {
-        return statusCode;
-    }
-
-    public void setStatusCode(Integer statusCode) {
-        this.statusCode = statusCode;
-    }
-
-    public String getMessage() {
-        return message;
-    }
-
-    public void setMessage(String message) {
-        this.message = message;
-    }
-
-    public Date getTimestamp() {
-        return timestamp;
-    }
-
-    public void setTimestamp(Date timestamp) {
-        this.timestamp = timestamp;
-    }
 }
