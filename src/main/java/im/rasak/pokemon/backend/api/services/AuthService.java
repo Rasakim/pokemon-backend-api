@@ -8,4 +8,6 @@ public interface AuthService {
     void registerUser(RegisterDto registerDto);
 
     String loginUser(LoginDto loginDto);
+
+    void logoutUser(String token);
 }

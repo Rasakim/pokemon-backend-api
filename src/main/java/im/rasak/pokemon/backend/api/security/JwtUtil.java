@@ -16,14 +16,12 @@ import java.util.Date;
 
 @Slf4j
 @Component
-public class JwtHelper {
+public class JwtUtil {
 
     @Value("${jwt.secret}")
     private String jwtSecret;
-
     @Value("${jwt.expiration-time}")
     private long jwtExpirationTime;
-
     private SecretKey key;
 
     @PostConstruct
@@ -52,6 +50,16 @@ public class JwtHelper {
                 .getPayload();
 
         return claims.getSubject();
+    }
+
+    public Date getExpireDateFromJWT(String token) {
+        Claims claims = Jwts.parser()
+                .verifyWith(key)
+                .build()
+                .parseSignedClaims(token)
+                .getPayload();
+
+        return claims.getExpiration();
     }
 
     public boolean validateToken(String token) throws AuthenticationException {

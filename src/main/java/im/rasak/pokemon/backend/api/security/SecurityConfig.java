@@ -1,5 +1,6 @@
 package im.rasak.pokemon.backend.api.security;
 
+import im.rasak.pokemon.backend.api.services.TokenService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -21,21 +22,24 @@ public class SecurityConfig {
 
     private final JwtAuthEntryPoint jwtAuthEntryPoint;
 
-    private final JwtHelper jwtHelper;
+    private final JwtUtil jwtUtil;
 
     private final CustomUserDetailsService userDetailsService;
 
+    private final TokenService tokenService;
+
     @Autowired
-    public SecurityConfig(CustomUserDetailsService userDetailsService, JwtAuthEntryPoint jwtAuthEntryPoint, JwtHelper jwtHelper) {
+    public SecurityConfig(CustomUserDetailsService userDetailsService, JwtAuthEntryPoint jwtAuthEntryPoint, JwtUtil jwtUtil, TokenService tokenService) {
         this.jwtAuthEntryPoint = jwtAuthEntryPoint;
-        this.jwtHelper = jwtHelper;
+        this.jwtUtil = jwtUtil;
         this.userDetailsService = userDetailsService;
+        this.tokenService = tokenService;
     }
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 
-        http.addFilterBefore(jwtAuthenticationFilter(jwtHelper, userDetailsService), UsernamePasswordAuthenticationFilter.class);
+        http.addFilterBefore(jwtAuthenticationFilter(jwtUtil, userDetailsService), UsernamePasswordAuthenticationFilter.class);
 
         http
                 .csrf(AbstractHttpConfigurer::disable)
@@ -43,7 +47,7 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.POST, "/api/auth/**").permitAll()
-                        .requestMatchers(HttpMethod.GET).authenticated()
+                        .requestMatchers(HttpMethod.GET, "/api/pokemons/**").permitAll()
                         .anyRequest().authenticated()
                 );
 
@@ -61,7 +65,7 @@ public class SecurityConfig {
     }
 
     @Bean
-    public JwtAuthenticationFilter jwtAuthenticationFilter(JwtHelper jwtHelper, CustomUserDetailsService customUserDetailsService) {
-        return new JwtAuthenticationFilter(jwtHelper, customUserDetailsService);
+    public JwtAuthenticationFilter jwtAuthenticationFilter(JwtUtil jwtUtil, CustomUserDetailsService customUserDetailsService) {
+        return new JwtAuthenticationFilter(jwtUtil, tokenService, userDetailsService);
     }
 }

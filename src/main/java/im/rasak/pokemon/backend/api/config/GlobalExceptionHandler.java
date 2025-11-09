@@ -58,6 +58,11 @@ public class GlobalExceptionHandler {
         return buildErrorResponse(ex.getMessage(), HttpStatus.BAD_REQUEST, ex.getErrors());
     }
 
+    @ExceptionHandler(AuthenticationBlacklistedTokenException.class)
+    public ResponseEntity<ErrorObject> BlacklistedTokenException(AuthenticationBlacklistedTokenException ex) {
+        return buildErrorResponse(ex.getMessage(), HttpStatus.UNAUTHORIZED, null);
+    }
+
     private ResponseEntity<ErrorObject> buildErrorResponse(String message, HttpStatus status, Map<String, String> errors) {
         HttpServletRequest request = getCurrentHttpRequest();
         String clientIp = request != null ? request.getRemoteAddr() : "unknown";

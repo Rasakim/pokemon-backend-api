@@ -9,7 +9,7 @@ import im.rasak.pokemon.backend.api.models.Role;
 import im.rasak.pokemon.backend.api.models.UserEntity;
 import im.rasak.pokemon.backend.api.repository.RoleRepository;
 import im.rasak.pokemon.backend.api.repository.UserRepository;
-import im.rasak.pokemon.backend.api.security.JwtHelper;
+import im.rasak.pokemon.backend.api.security.JwtUtil;
 import im.rasak.pokemon.backend.api.services.AuthService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -36,7 +36,8 @@ public class AuthServiceImpl implements AuthService {
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
-    private final JwtHelper jwtHelper;
+    private final TokenServiceImpl tokenService;
+    private final JwtUtil jwtUtil;
 
     @Override
     public void registerUser(RegisterDto registerDto) {
@@ -70,7 +71,7 @@ public class AuthServiceImpl implements AuthService {
                     new UsernamePasswordAuthenticationToken(loginDto.getUsername(), loginDto.getPassword()));
 
             SecurityContextHolder.getContext().setAuthentication(authentication);
-            String token = jwtHelper.generateToken(authentication);
+            String token = jwtUtil.generateToken(authentication);
 
             log.info("User '{}' logged in successfully", loginDto.getUsername());
 
@@ -78,6 +79,16 @@ public class AuthServiceImpl implements AuthService {
         } catch (AuthenticationException ex) {
             log.warn("Failed login attempt for username '{}': {}", loginDto.getUsername(), ex.getMessage());
             throw new AuthenticationLoginException(ex.getMessage(), Map.of("username", loginDto.getUsername()));
+        }
+    }
+
+    @Override
+    public void logoutUser(String token) {
+        try {
+            tokenService.blacklistToken(token);
+            log.info("User '{}' logged out successfully", jwtUtil.getUsernameFromJWT(token));
+        } catch (Exception ex) {
+            log.warn("Failed logout attempt for username '{}': {}", jwtUtil.getUsernameFromJWT(token), ex.getMessage());
         }
     }
 }

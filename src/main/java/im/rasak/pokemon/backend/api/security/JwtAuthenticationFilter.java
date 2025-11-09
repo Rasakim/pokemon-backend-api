@@ -1,5 +1,7 @@
 package im.rasak.pokemon.backend.api.security;
 
+import im.rasak.pokemon.backend.api.exceptions.AuthenticationBlacklistedTokenException;
+import im.rasak.pokemon.backend.api.services.TokenService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -20,7 +22,9 @@ import java.io.IOException;
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
-    private final JwtHelper jwtHelper;
+    private final JwtUtil jwtUtil;
+
+    private final TokenService tokenService;
 
     private final CustomUserDetailsService customUserDetailsService;
 
@@ -30,16 +34,23 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         String token = getJwtFromRequest(request);
 
         try {
-            if (StringUtils.hasText(token) && jwtHelper.validateToken(token)) {
-                String username = jwtHelper.getUsernameFromJWT(token);
+            if (StringUtils.hasText(token)) {
 
-                UserDetails userDetails = customUserDetailsService.loadUserByUsername(username);
-                UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
-                authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                SecurityContextHolder.getContext().setAuthentication(authenticationToken);
+                if (jwtUtil.validateToken(token)) {
+                    String username = jwtUtil.getUsernameFromJWT(token);
+
+                    if (tokenService.isTokenBlacklisted(token)) {
+                        throw new AuthenticationBlacklistedTokenException("User " + username + ": attempt to use blacklisted token");
+                    }
+
+                    UserDetails userDetails = customUserDetailsService.loadUserByUsername(username);
+                    UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+                    authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                    SecurityContextHolder.getContext().setAuthentication(authenticationToken);
+                }
             }
         } catch (Exception ex) {
-            log.error("JWT authentication failed: {}", ex.getMessage());
+            log.error("JWT authentication failed - {}", ex.getMessage());
         }
 
         filterChain.doFilter(request, response);
