@@ -1,21 +1,30 @@
 package im.rasak.pokemon.backend.api.services;
 
-import im.rasak.pokemon.backend.api.dto.PokemonEntityDTO;
-import im.rasak.pokemon.backend.api.dto.PokemonPageResponseDTO;
+import im.rasak.pokemon.backend.api.dto.pokemon.PageResponseSimplePokemonDto;
+import im.rasak.pokemon.backend.api.dto.pokemon.SimplePokemonDto;
+import im.rasak.pokemon.backend.api.models.Pokemon;
+
+import java.util.List;
 
 public interface PokemonService {
 
-    PokemonEntityDTO createPokemon(PokemonEntityDTO pokemonEntityDTO);
+    SimplePokemonDto createPokemon(SimplePokemonDto pokemonDto);
 
-    PokemonPageResponseDTO getAllPokemons(int pageNumber, int pageSize);
+    SimplePokemonDto getPokemonDtoByPokedexId(int pokedexId);
 
-    PokemonEntityDTO getPokemonByPokedexId(int pokedexId);
+    SimplePokemonDto getPokemonByName(String name);
 
-    PokemonEntityDTO getPokemonByName(String name);
+    List<SimplePokemonDto> getAllPokemons();
 
-    PokemonEntityDTO updatePokemonByPokedexId(PokemonEntityDTO pokemonEntityDTO, int pokedexId);
+    SimplePokemonDto updatePokemonByPokedexId(SimplePokemonDto newPokemonDto, int pokedexIdToUpdate);
 
-    void deletePokemonByPokedexId(int pokedexId);
+    SimplePokemonDto deletePokemonByPokedexId(int pokedexIdToDelete);
 
-    void deleteAllPokemon();
+    List<SimplePokemonDto> deleteAllPokemon();
+
+    Pokemon getPokemonEntityByPokedexId(int pokedexId);
+
+    // TODO
+    PageResponseSimplePokemonDto getAllPokemonPaged(int pageNumber, int pageSize);
+
 }

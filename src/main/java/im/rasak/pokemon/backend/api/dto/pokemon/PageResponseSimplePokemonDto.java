@@ -1,21 +1,21 @@
-package im.rasak.pokemon.backend.api.dto;
+package im.rasak.pokemon.backend.api.dto.pokemon;
 
 import java.util.List;
 
-public class PokemonPageResponseDTO {
+public class PageResponseSimplePokemonDto {
 
-    private List<PokemonEntityDTO> content;
+    private List<SimplePokemonDto> content;
     private int pageNumber;
     private int pageSize;
     private long totalElements;
     private int totalPages;
     private boolean lastPage;
 
-    public PokemonPageResponseDTO() {
+    public PageResponseSimplePokemonDto() {
 
     }
 
-    public PokemonPageResponseDTO(List<PokemonEntityDTO> content, int pageNumber, int pageSize, long totalElements, int totalPages, boolean lastPage) {
+    public PageResponseSimplePokemonDto(List<SimplePokemonDto> content, int pageNumber, int pageSize, long totalElements, int totalPages, boolean lastPage) {
         this.content = content;
         this.pageNumber = pageNumber;
         this.pageSize = pageSize;
@@ -24,11 +24,11 @@ public class PokemonPageResponseDTO {
         this.lastPage = lastPage;
     }
 
-    public List<PokemonEntityDTO> getContent() {
+    public List<SimplePokemonDto> getContent() {
         return content;
     }
 
-    public void setContent(List<PokemonEntityDTO> content) {
+    public void setContent(List<SimplePokemonDto> content) {
         this.content = content;
     }
 

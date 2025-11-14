@@ -5,6 +5,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -21,6 +22,11 @@ import java.util.stream.Collectors;
 @ControllerAdvice
 @Slf4j
 public class GlobalExceptionHandler {
+
+    @ExceptionHandler(UserNotFoundException.class)
+    public ResponseEntity<ErrorObject> handleUserNotFoundException(UserNotFoundException ex) {
+        return buildErrorResponse(ex.getMessage(), HttpStatus.BAD_REQUEST, null);
+    }
 
     @ExceptionHandler(PokemonNotFoundException.class)
     public ResponseEntity<ErrorObject> handlePokemonNotFoundException(PokemonNotFoundException ex) {
@@ -60,6 +66,11 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(AuthenticationBlacklistedTokenException.class)
     public ResponseEntity<ErrorObject> BlacklistedTokenException(AuthenticationBlacklistedTokenException ex) {
+        return buildErrorResponse(ex.getMessage(), HttpStatus.UNAUTHORIZED, null);
+    }
+
+    @ExceptionHandler(AuthorizationDeniedException.class)
+    public ResponseEntity<ErrorObject> handleAuthorizationDeniedException(AuthorizationDeniedException ex) {
         return buildErrorResponse(ex.getMessage(), HttpStatus.UNAUTHORIZED, null);
     }
 

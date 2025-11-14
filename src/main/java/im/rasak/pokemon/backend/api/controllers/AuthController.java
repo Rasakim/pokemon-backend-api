@@ -1,8 +1,8 @@
 package im.rasak.pokemon.backend.api.controllers;
 
-import im.rasak.pokemon.backend.api.dto.AuthResponseDto;
-import im.rasak.pokemon.backend.api.dto.LoginDto;
-import im.rasak.pokemon.backend.api.dto.RegisterDto;
+import im.rasak.pokemon.backend.api.dto.auth.AuthResponseDto;
+import im.rasak.pokemon.backend.api.dto.auth.LoginDto;
+import im.rasak.pokemon.backend.api.dto.auth.RegisterDto;
 import im.rasak.pokemon.backend.api.services.AuthService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

@@ -1,4 +1,4 @@
-package im.rasak.pokemon.backend.api.dto;
+package im.rasak.pokemon.backend.api.dto.auth;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;

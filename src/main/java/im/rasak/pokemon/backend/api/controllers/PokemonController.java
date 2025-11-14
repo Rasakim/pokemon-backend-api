@@ -1,12 +1,13 @@
 package im.rasak.pokemon.backend.api.controllers;
 
-import im.rasak.pokemon.backend.api.dto.PokemonEntityDTO;
-import im.rasak.pokemon.backend.api.dto.PokemonPageResponseDTO;
+import im.rasak.pokemon.backend.api.dto.pokemon.SimplePokemonDto;
+import im.rasak.pokemon.backend.api.responses.ApiResponse;
 import im.rasak.pokemon.backend.api.services.PokemonService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/pokemons")
@@ -20,37 +21,49 @@ public class PokemonController {
     }
 
     @GetMapping
-    public ResponseEntity<PokemonPageResponseDTO> getAllPokemon(
-            @RequestParam(value = "pageNumber", defaultValue = "0", required = false) int pageNumber,
-            @RequestParam(value = "pageSize", defaultValue = "10", required = false) int pageSize
-    ) {
-        return new ResponseEntity<>(pokemonService.getAllPokemons(pageNumber, pageSize), HttpStatus.OK);
+    public ResponseEntity<ApiResponse<List<SimplePokemonDto>>> getAllPokemon() {
+
+        List<SimplePokemonDto> allPokemon = pokemonService.getAllPokemons();
+
+        return ResponseEntity.ok(ApiResponse.success(allPokemon));
     }
 
     @GetMapping("{pokedexId}")
-    public ResponseEntity<PokemonEntityDTO> getPokemonByPokedexId(@PathVariable("pokedexId") int pokedexId) {
-        return new ResponseEntity<>(pokemonService.getPokemonByPokedexId(pokedexId), HttpStatus.OK);
+    public ResponseEntity<ApiResponse<SimplePokemonDto>> getPokemonByPokedexId(@PathVariable("pokedexId") int pokedexId) {
+
+        SimplePokemonDto pokemon = pokemonService.getPokemonDtoByPokedexId(pokedexId);
+
+        return ResponseEntity.ok(ApiResponse.success(pokemon));
     }
 
     @GetMapping("name/{name}")
-    public ResponseEntity<PokemonEntityDTO> getPokemonByName(@PathVariable("name") String name) {
-        return new ResponseEntity<>(pokemonService.getPokemonByName(name), HttpStatus.OK);
+    public ResponseEntity<ApiResponse<SimplePokemonDto>> getPokemonByName(@PathVariable("name") String name) {
+
+        SimplePokemonDto pokemon = pokemonService.getPokemonByName(name);
+
+        return ResponseEntity.ok(ApiResponse.success(pokemon));
     }
 
     @PostMapping
-    public ResponseEntity<PokemonEntityDTO> createPokemon(@RequestBody PokemonEntityDTO pokemon) {
-        return new ResponseEntity<>(pokemonService.createPokemon(pokemon), HttpStatus.CREATED);
+    public ResponseEntity<ApiResponse<SimplePokemonDto>> createPokemon(@RequestBody SimplePokemonDto pokemon) {
+
+        SimplePokemonDto newPokemon = pokemonService.createPokemon(pokemon);
+
+        return ResponseEntity.ok(ApiResponse.success(newPokemon, "Pokemon created"));
     }
 
     @PutMapping("{pokedexId}")
-    public ResponseEntity<PokemonEntityDTO> updatePokemon(@RequestBody PokemonEntityDTO pokemonEntityDTO, @PathVariable("pokedexId") int pokedexId) {
-        return new ResponseEntity<>(pokemonService.updatePokemonByPokedexId(pokemonEntityDTO, pokedexId), HttpStatus.OK);
+    public ResponseEntity<ApiResponse<SimplePokemonDto>> updatePokemon(@RequestBody SimplePokemonDto changedPokemon, @PathVariable("pokedexId") int pokedexId) {
+
+        SimplePokemonDto updatedPokemon = pokemonService.updatePokemonByPokedexId(changedPokemon, pokedexId);
+
+        return ResponseEntity.ok(ApiResponse.success(updatedPokemon, "Pokemon updated"));
     }
 
     @DeleteMapping("{pokedexId}")
-    public ResponseEntity<String> deletePokemon(@PathVariable("pokedexId") int pokedexId) {
-        pokemonService.deletePokemonByPokedexId(pokedexId);
-        return ResponseEntity.ok("Pokemon with id: {" + pokedexId + "} deleted successfully!");
+    public ResponseEntity<ApiResponse<SimplePokemonDto>> deletePokemon(@PathVariable("pokedexId") int pokedexId) {
+        SimplePokemonDto deletedPokemon = pokemonService.deletePokemonByPokedexId(pokedexId);
+        return ResponseEntity.ok(ApiResponse.success(deletedPokemon, "Pokemon deleted"));
     }
 
     @DeleteMapping()

@@ -1,7 +1,7 @@
 package im.rasak.pokemon.backend.api.services.impl;
 
-import im.rasak.pokemon.backend.api.dto.LoginDto;
-import im.rasak.pokemon.backend.api.dto.RegisterDto;
+import im.rasak.pokemon.backend.api.dto.auth.LoginDto;
+import im.rasak.pokemon.backend.api.dto.auth.RegisterDto;
 import im.rasak.pokemon.backend.api.exceptions.AuthenticationLoginException;
 import im.rasak.pokemon.backend.api.exceptions.EmailAlreadyTakenException;
 import im.rasak.pokemon.backend.api.exceptions.UsernameAlreadyTakenException;

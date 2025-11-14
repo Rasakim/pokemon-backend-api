@@ -1,9 +1,9 @@
-package im.rasak.pokemon.backend.api.dto;
+package im.rasak.pokemon.backend.api.dto.review;
 
 import java.util.List;
 
 public class ReviewPageResponseDTO {
-    private List<ReviewEntityDTO> content;
+    private List<ReviewDto> content;
     private int pageNumber;
     private int pageSize;
     private long totalElements;
@@ -14,7 +14,7 @@ public class ReviewPageResponseDTO {
 
     }
 
-    public ReviewPageResponseDTO(List<ReviewEntityDTO> content, int pageNumber, int pageSize, long totalElements, int totalPages, boolean lastPage) {
+    public ReviewPageResponseDTO(List<ReviewDto> content, int pageNumber, int pageSize, long totalElements, int totalPages, boolean lastPage) {
         this.content = content;
         this.pageNumber = pageNumber;
         this.pageSize = pageSize;
@@ -23,11 +23,11 @@ public class ReviewPageResponseDTO {
         this.lastPage = lastPage;
     }
 
-    public List<ReviewEntityDTO> getContent() {
+    public List<ReviewDto> getContent() {
         return content;
     }
 
-    public void setContent(List<ReviewEntityDTO> content) {
+    public void setContent(List<ReviewDto> content) {
         this.content = content;
     }
 

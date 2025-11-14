@@ -1,62 +1,50 @@
 package im.rasak.pokemon.backend.api.controllers;
 
-import im.rasak.pokemon.backend.api.dto.PokemonPageResponseDTO;
-import im.rasak.pokemon.backend.api.dto.ReviewEntityDTO;
-import im.rasak.pokemon.backend.api.dto.ReviewPageResponseDTO;
+import im.rasak.pokemon.backend.api.dto.review.CreateReviewDto;
+import im.rasak.pokemon.backend.api.dto.review.DeleteReviewDto;
+import im.rasak.pokemon.backend.api.dto.review.ReviewDto;
+import im.rasak.pokemon.backend.api.responses.ApiResponse;
+import im.rasak.pokemon.backend.api.services.PokemonService;
 import im.rasak.pokemon.backend.api.services.ReviewService;
+import im.rasak.pokemon.backend.api.services.UserService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/pokemons")
+@RequestMapping("/api/pokemons/{pokedexId}")
 public class ReviewController {
 
     private final ReviewService reviewService;
 
     @Autowired
-    public ReviewController(ReviewService reviewService) {
+    public ReviewController(ReviewService reviewService, PokemonService pokemonService, UserDetailsService userDetailsService, UserService userService) {
         this.reviewService = reviewService;
     }
 
-    @PostMapping("{pokedexId}/reviews")
-    @ResponseStatus(HttpStatus.CREATED)
-    public ResponseEntity<ReviewEntityDTO> createReview(@PathVariable("pokedexId") int pokedexId, @RequestBody ReviewEntityDTO review) {
-        return new ResponseEntity<>(reviewService.createReview(pokedexId, review), HttpStatus.CREATED);
+    @PostMapping("reviews")
+    public ApiResponse<ReviewDto> createReview(@RequestHeader("Authorization") String authorizationHeader, @PathVariable("pokedexId") int pokedexId, @RequestBody @Valid CreateReviewDto newReviewDto) {
+
+        ReviewDto newReview = reviewService.createReview(authorizationHeader, pokedexId, newReviewDto);
+
+        return ApiResponse.success(newReview, "Review created");
     }
 
-    @GetMapping("{pokedexId}/reviews")
-    public ResponseEntity<ReviewPageResponseDTO> getAllReviewsForPokemon(
-            @PathVariable(value = "pokedexId", required = true) int pokedexId,
-            @RequestParam(value = "pageNumber", defaultValue = "0", required = false) int pageNumber,
-            @RequestParam(value = "pageSize", defaultValue = "10", required = false) int pageSize)
-    {
-        return new ResponseEntity<>(reviewService.getAllReviewsForPokemonByPokedexId(pokedexId, pageNumber, pageSize), HttpStatus.OK);
+    @GetMapping("reviews")
+    public ApiResponse<List<ReviewDto>> getReviewsForPokemon(@PathVariable("pokedexId") int pokedexId) {
+
+        List<ReviewDto> allReviews = reviewService.getReviewsForPokemon(pokedexId);
+
+        return ApiResponse.success(allReviews);
     }
 
-    /**
-    @GetMapping("{pokedexId}/reviews")
-    public ResponseEntity<List<ReviewEntityDTO>> getReviewsByPokedexId(@PathVariable("pokedexId") int pokedexId) {
-        return new ResponseEntity<>(reviewService.getReviewsByPokdexId(pokedexId), HttpStatus.OK);
-    }
-    **/
+    @DeleteMapping("reviews")
+    public ApiResponse<ReviewDto> deleteReview(@RequestHeader("Authorization") String authorizationHeader, @RequestBody @Valid DeleteReviewDto deleteReviewDto) {
+        ReviewDto deletedReview = reviewService.deleteReview(authorizationHeader, deleteReviewDto);
 
-    @GetMapping("{pokedexId}/reviews/{reviewId}")
-    public ResponseEntity<ReviewEntityDTO> getReviewById(@PathVariable("pokedexId") int pokedexId, @PathVariable("reviewId") int reviewId) {
-        return new ResponseEntity<>(reviewService.getReviewById(pokedexId, reviewId), HttpStatus.OK);
-    }
-
-    @DeleteMapping("{pokedexId}/reviews/{reviewId}")
-    public ResponseEntity<String> deleteReview(@PathVariable("pokedexId") int pokedexId, @PathVariable("reviewId") int reviewId) {
-        reviewService.deleteReviewById(pokedexId, reviewId);
-        return ResponseEntity.ok("Review with id: {" + reviewId + "} deleted successfully!");
-    }
-
-    @PutMapping("{pokedexId}/reviews/{reviewId}")
-    public ResponseEntity<ReviewEntityDTO> updateReview(@RequestBody ReviewEntityDTO reviewEntityDTO, @PathVariable("pokedexId") int pokedexId, @PathVariable("reviewId") int reviewId) {
-        return new ResponseEntity<>(reviewService.updateReviewById(reviewEntityDTO, pokedexId, reviewId), HttpStatus.OK);
+        return ApiResponse.success(deletedReview, "Review deleted");
     }
 }

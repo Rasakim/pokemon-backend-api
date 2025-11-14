@@ -1,23 +1,16 @@
 package im.rasak.pokemon.backend.api.services;
 
-import im.rasak.pokemon.backend.api.dto.ReviewEntityDTO;
-import im.rasak.pokemon.backend.api.dto.ReviewPageResponseDTO;
-import im.rasak.pokemon.backend.api.models.ReviewEntity;
-import org.springframework.data.domain.Page;
+import im.rasak.pokemon.backend.api.dto.review.CreateReviewDto;
+import im.rasak.pokemon.backend.api.dto.review.DeleteReviewDto;
+import im.rasak.pokemon.backend.api.dto.review.ReviewDto;
+import jakarta.validation.Valid;
 
 import java.util.List;
 
 public interface ReviewService {
+    ReviewDto createReview(String authorizationHeader, int pokedexId, @Valid CreateReviewDto newReview);
 
-    ReviewEntityDTO createReview(int pokedexId, ReviewEntityDTO reviewEntityDTO);
+    List<ReviewDto> getReviewsForPokemon(int pokedexId);
 
-    ReviewEntityDTO getReviewById(int pokedexId, int reviewId);
-
-    List<ReviewEntityDTO> getReviewsByPokdexId(int pokedexId);
-
-    void deleteReviewById(int pokedexId, int reviewId);
-
-    ReviewEntityDTO updateReviewById(ReviewEntityDTO reviewEntityDTO, int pokedexId, int reviewId);
-
-    ReviewPageResponseDTO getAllReviewsForPokemonByPokedexId(int pokedexId, int pageNumber, int pageSize);
+    ReviewDto deleteReview(String authorizationHeader, @Valid DeleteReviewDto deleteReviewDto);
 }
